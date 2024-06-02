@@ -51,7 +51,7 @@ To start the word masking and guessing game, run the `main.py` script:
 python src/main.py
 ```
 
-You will be prompted to guess the missing word in masked sentences and receive feedback on your guesses, including a perplexity score.
+You will be prompted to choose a language (e.g., 'english', 'spanish', 'french'). The program will then load the corresponding text corpus from `data/corpus/<language>` and begin the interactive guessing game. You will guess the missing word in masked sentences and receive feedback on your guesses, including a perplexity score. The perplexity score measures how well the language model predicts the missing word based on the context of the sentence. The lower the perplexity score, the better the model (in this case: you) performs.
 
 ## Features
 

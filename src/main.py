@@ -1,5 +1,6 @@
 import random
 import nltk
+import os
 from data_processing import (
     load_corpus, preprocess_text, calculate_frequency_dict)
 from ngram import NgramModel
@@ -10,12 +11,32 @@ def main():
     """
     Main function to run the word masking and guessing game.
 
-    This function loads and preprocesses a text corpus, calculates the word
-    frequency dictionary, builds an n-gram model, processes sentences, and
-    facilitates a word guessing game with the user.
+    This function loads and preprocesses a text corpus based on the chosen
+    language, calculates the word frequency dictionary, builds an n-gram model,
+    processes sentences, and facilitates a word guessing game with the user.
     """
+    language = input("Choose a language (e.g., 'english', 'spanish', "
+                     "'french'): ").strip().lower()
+    corpus_dir = f'data/corpus/{language}'
+
+    if not os.path.isdir(corpus_dir):
+        print(
+            f"No corpus found for language '{language}'. Please make sure the "
+            f"directory '{corpus_dir}' exists.")
+        return
+
+    corpus_files = [os.path.join(corpus_dir, file) for file in os.listdir(
+        corpus_dir) if file.endswith('.txt')]
+    if not corpus_files:
+        print(
+            f"No corpus files found in '{corpus_dir}'. Please add text files "
+            "to this directory.")
+        return
+
     # Load and preprocess the corpus
-    corpus = load_corpus('data/corpus/brown.txt')
+    corpus = ''
+    for file in corpus_files:
+        corpus += load_corpus(file) + ' '
     tokens = preprocess_text(corpus)
 
     # Calculate the frequency dictionary
