@@ -52,6 +52,8 @@ def main():
         ngram_model.update(tokens)
     random.shuffle(sentences)
 
+    difficulty = input("Choose a difficulty level (easy, medium, hard): ")
+
     user_score = 0
     user_correct = 0
     total_sentences = 0
@@ -60,7 +62,7 @@ def main():
         if len(sentence) == 0:
             continue
         masked_sentence, original_word = mask_word(
-            sentence, frequency_dict, 'easy')
+            sentence, frequency_dict, difficulty)
         print("Masked Sentence: ", masked_sentence)
         user_guess = input("Guess the missing word: ")
         user_sentence = masked_sentence.replace('[MASK]', user_guess)
