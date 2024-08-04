@@ -5,7 +5,8 @@ import re
 
 def mask_word(sentence, frequency_dict, difficulty):
     """
-    Mask a word in a sentence based on difficulty level using Zipf's law and randomization.
+    Mask a word in a sentence based on difficulty level using Zipf's law and
+    randomization.
 
     Parameters
     ----------

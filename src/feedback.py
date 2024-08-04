@@ -1,51 +1,68 @@
-def provide_feedback(ngram_model, masked_sentence, user_guess, original_word,
-                     frequency_dict, top_n=5):
+from typing import List
+
+
+def provide_context_feedback(
+    user_guess: str,
+    original_word: str,
+    user_fitness: float,
+    original_fitness: float,
+    contextual_similarity: float,
+    top_words: List[str],
+    masked_sentence: str,
+    context_model
+) -> str:
     """
-    Provide detailed feedback to the user.
+    Provide feedback on the user's guess in terms of contextual fitness.
+
+    Parameters
+    ----------
+    user_guess : str
+        The word guessed by the user to replace the masked word.
+    original_word : str
+        The actual word that was masked in the sentence.
+    user_fitness : float
+        The fitness score of the user's guessed word in the context.
+    original_fitness : float
+        The fitness score of the original word in the context.
+    contextual_similarity : float
+        The similarity score between the user's guessed word and the original
+        word.
+    top_words : List[str]
+        A list of top words that fit well in the context.
+    masked_sentence : str
+        The sentence with a masked word, represented as '[MASK]'.
+    context_model : object
+        The context model used to calculate fitness scores.
+
+    Returns
+    -------
+    str
+        A feedback string detailing the performance of the user's guess in
+        context.
     """
-    # Calculate perplexity for the original sentence and user's guess
-    original_sentence = masked_sentence.replace('[MASK]', original_word)
-    user_sentence = masked_sentence.replace('[MASK]', user_guess)
-    original_perplexity = ngram_model.calculate_perplexity(original_sentence)
-    user_perplexity = ngram_model.calculate_perplexity(user_sentence)
+    feedback = (
+        f"Original word: '{original_word}' (fitness score: "
+        f"{original_fitness:.2f})\n"
+        f"Your guess: '{user_guess}' (fitness score: {user_fitness:.2f})\n"
+        f"Contextual similarity between your guess and the original word: "
+        f"{contextual_similarity:.2f}\n\n"
+    )
 
-    # Generate a list of alternative words and their perplexities
-    words = list(frequency_dict.keys())
-    word_perplexities = []
-    for word in words:
-        if word != original_word and word != user_guess:
-            alt_sentence = masked_sentence.replace('[MASK]', word)
-            perplexity = ngram_model.calculate_perplexity(alt_sentence)
-            word_perplexities.append((word, perplexity))
-
-    # Sort alternatives by perplexity (lower is better)
-    word_perplexities.sort(key=lambda x: x[1])
-
-    # Find rank of user's guess
-    user_rank = next((i + 1 for i, (word, _)
-                     in enumerate(word_perplexities) if word == user_guess),
-                     None)
-    if user_guess == original_word:
-        user_rank = 1
-    elif user_rank is not None:
-        user_rank += 1  # Account for the original word
-
-    # Prepare feedback
-    feedback = f"The original word used in this context was '{original_word}'"\
-        f"(perplexity: {original_perplexity:.2f}).\n"
-    feedback += f"Your guess '{user_guess}' has a perplexity of " \
-        f"{user_perplexity:.2f}.\n"
-
-    if user_rank:
-        feedback += f"Your guess ranks #{user_rank} among possible words for "\
-            "this context.\n"
+    if user_fitness > original_fitness:
+        feedback += ("Great job! Your word actually fits better in this "
+                     "context than the original word.\n")
+    elif user_fitness > 0.8 * original_fitness:
+        feedback += "Excellent! Your word fits very well in this context.\n"
+    elif user_fitness > 0.5 * original_fitness:
+        feedback += ("Good try! Your word fits reasonably well in this "
+                     "context.\n")
     else:
-        feedback += "Your guess doesn't appear in our list of common words "\
-            "for this context.\n"
+        feedback += ("Your word might not be the best fit for this context, "
+                     "but don't worry! Language learning is a process.\n")
 
-    feedback += f"\nHere are the top {top_n} words that could fit in this "\
-        "context:\n"
-    for i, (word, perplexity) in enumerate(word_perplexities[:top_n], 1):
-        feedback += f"{i}. '{word}' (perplexity: {perplexity:.2f})\n"
+    feedback += "\nTop words that fit well in this context:\n"
+    for i, word in enumerate(top_words[:5], 1):
+        fitness, _ = context_model.get_word_fitness(masked_sentence, word)
+        feedback += f"{i}. {word} (fitness: {fitness:.2f})\n"
 
     return feedback

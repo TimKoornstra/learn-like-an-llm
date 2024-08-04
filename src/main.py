@@ -3,11 +3,10 @@ import nltk
 import os
 from data_processing import (
     load_corpus, preprocess_text, calculate_frequency_dict)
-from ngram import NgramModel
 from masking import mask_word
 from user import UserProfile, schedule_review, adjust_difficulty
-from feedback import provide_feedback
-from tqdm import tqdm
+from feedback import provide_context_feedback
+from context_aware_model import ContextAwareTextModel
 
 
 def main():
@@ -23,7 +22,7 @@ def main():
     corpus_dir = f'data/corpus/{language}'
     if not os.path.isdir(corpus_dir):
         print(f"No corpus found for language '{language}'. Please make sure "
-              "the directory '{corpus_dir}' exists.")
+              f"the directory '{corpus_dir}' exists.")
         return
 
     corpus_files = [os.path.join(corpus_dir, file) for file in os.listdir(
@@ -33,7 +32,9 @@ def main():
               "files to this directory.")
         return
 
-    # Load and preprocess the corpus
+    # Initialize user profile
+    user_profile = UserProfile()
+
     corpus = ''
     for file in corpus_files:
         corpus += load_corpus(file) + ' '
@@ -42,19 +43,10 @@ def main():
     # Calculate the frequency dictionary
     frequency_dict = calculate_frequency_dict(tokens)
 
-    # Build n-gram model
-    ngram_model = NgramModel(3)  # Using trigrams
-
-    # Process sentences
     sentences = nltk.sent_tokenize(corpus)
-    for sentence in tqdm(sentences, desc="Building n-gram model"):
-        tokens = preprocess_text(sentence)
-        ngram_model.update(tokens)
-
     random.shuffle(sentences)
 
-    # Initialize user profile
-    user_profile = UserProfile()
+    context_model = ContextAwareTextModel()
 
     while True:
         difficulty = user_profile.get_current_difficulty()
@@ -68,17 +60,21 @@ def main():
         print("\nMasked Sentence: ", masked_sentence)
         user_guess = input("Guess the missing word: ")
 
-        is_correct = original_word.lower() == user_guess.lower()
-        feedback = provide_feedback(ngram_model, masked_sentence, user_guess,
-                                    original_word, frequency_dict)
+        original_fitness, top_words = context_model.get_word_fitness(
+            masked_sentence, original_word)
+        user_fitness, _ = context_model.get_word_fitness(
+            masked_sentence, user_guess)
+        contextual_similarity = context_model.calculate_contextual_similarity(
+            sentence, original_word, user_guess)
+
+        feedback = provide_context_feedback(user_guess, original_word,
+                                            user_fitness, original_fitness,
+                                            contextual_similarity, top_words,
+                                            masked_sentence, context_model)
         print(feedback)
 
-        user_sentence = masked_sentence.replace('[MASK]', user_guess)
-        perplexity = ngram_model.calculate_perplexity(user_sentence)
-        print("Perplexity Score: ", perplexity)
-
         # Update user profile and adjust difficulty
-        user_profile.update_performance(is_correct, perplexity)
+        user_profile.update_performance(user_fitness)
         new_difficulty = adjust_difficulty(user_profile)
         user_profile.set_difficulty(new_difficulty)
 
