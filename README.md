@@ -51,7 +51,7 @@ To start the word masking and guessing game, run the `main.py` script:
 python src/main.py
 ```
 
-You will be prompted to choose a language (e.g., 'english', 'spanish', 'french'). The program will then load the corresponding text corpus from `data/corpus/<language>` and begin the interactive guessing game. You will guess the missing word in masked sentences and receive feedback on your guesses, including a perplexity score, which measures how well the language model predicts the missing word based on the context of the sentence. The lower the perplexity score, the better the model (in this case: you) performs.
+You will be prompted to choose a language (e.g., 'english', 'spanish', 'french'). The program will then load the corresponding text corpus from `data/corpus/<language>` and begin the interactive guessing game. You will guess the missing word in masked sentences and receive feedback on your guesses, including a 'fitness' score, which measures how well the language model predicts the missing word fits in the context of that sentence. The higher the fitness score (ranging from 0 to 1), the better the model (in this case: you) perform.
 
 ## Features
 
@@ -65,6 +65,9 @@ You will be prompted to choose a language (e.g., 'english', 'spanish', 'french')
 
 - **Frontend Interface:** Develop a user-friendly frontend for easier interaction.
 - **Performance Metrics:** Provide detailed performance metrics and analysis.
+- **Improved Difficulty Levels:** Improve the way the masked words and sentences are chosen to provide a more challenging learning experience.
+- **Improved Scoring System:** Develop a more sophisticated scoring system based on user performance.
+- **Progress Tracking:** Track user progress and provide personalized feedback.
 
 ## Contributing
 
