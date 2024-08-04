@@ -1,6 +1,6 @@
 ## Learn Like An LLM
 
-Learn Like An LLM is a project designed to help users understand and engage with language models by simulating the experience of guessing masked words in sentences. The initial implementation includes an n-gram model for generating sentence probabilities and calculating perplexity. Future expansions aim to incorporate more sophisticated models like RoBERTa, enable users to upload their own corpora, and provide a user-friendly frontend interface.
+Learn Like An LLM is a project designed to help users understand and engage with language models by simulating the experience of guessing masked words in sentences. The initial implementation includes a BERT-based model for generating probable words, and the `all-MiniLM-L6-v2` model to generate cosine similarity between user input and the original text. Future expansions aim to incorporate more sophisticated models like RoBERTa, enable users to upload their own corpora, and provide a user-friendly frontend interface.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ Learn Like An LLM is a project designed to help users understand and engage with
 
 ## Introduction
 
-Learn Like An LLM provides an interactive way to engage with language models by allowing users to guess masked words in sentences. The project demonstrates how n-gram models can be used to calculate sentence probabilities and perplexity scores. This is a fun and educational tool for those interested in natural language processing and machine learning.
+Learn Like An LLM offers an interactive way to engage with language models by allowing users to guess masked words in sentences. The project demonstrates how language models can be used to learn a new language by providing more contextual feedback than just "correct" or "incorrect." This is a fun and educational tool for those interested in natural language processing and machine learning.
 
 ## Installation
 
@@ -51,21 +51,20 @@ To start the word masking and guessing game, run the `main.py` script:
 python src/main.py
 ```
 
-You will be prompted to choose a language (e.g., 'english', 'spanish', 'french'). The program will then load the corresponding text corpus from `data/corpus/<language>` and begin the interactive guessing game. You will guess the missing word in masked sentences and receive feedback on your guesses, including a perplexity score. The perplexity score measures how well the language model predicts the missing word based on the context of the sentence. The lower the perplexity score, the better the model (in this case: you) performs.
+You will be prompted to choose a language (e.g., 'english', 'spanish', 'french'). The program will then load the corresponding text corpus from `data/corpus/<language>` and begin the interactive guessing game. You will guess the missing word in masked sentences and receive feedback on your guesses, including a perplexity score, which measures how well the language model predicts the missing word based on the context of the sentence. The lower the perplexity score, the better the model (in this case: you) performs.
 
 ## Features
 
-- **N-gram Model:** Calculate sentence probabilities and perplexity using an n-gram model.
+- **Language Models:** Use BERT and MiniLM models for word prediction and similarity analysis.
 - **Interactive Game:** Engage with the language model by guessing masked words in sentences.
 - **Custom Corpora:** Load and preprocess text corpora for analysis.
+- **User-Uploaded Corpora:** Upload and play with your own corpora by uploading text files in the `data/corpus/<language>` directory.
+- **Automatic Translation:** Automatic translation of the original and user input text to English after guessing the masked word.
 
 ## Future Plans
 
-- **Advanced Models:** Integrate more sophisticated models like RoBERTa.
-- **User-Uploaded Corpora:** Allow users to upload and analyze their own text corpora.
 - **Frontend Interface:** Develop a user-friendly frontend for easier interaction.
 - **Performance Metrics:** Provide detailed performance metrics and analysis.
-- **Automatic Translation:** Translate sentences to other languages for multilingual support.
 
 ## Contributing
 
