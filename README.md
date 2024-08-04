@@ -1,6 +1,6 @@
 ## Learn Like An LLM
 
-Learn Like An LLM is a project designed to help users understand and engage with language models by simulating the experience of guessing masked words in sentences. The initial implementation includes a BERT-based model for generating probable words, and the `all-MiniLM-L6-v2` model to generate cosine similarity between user input and the original text. Future expansions aim to incorporate more sophisticated models like RoBERTa, enable users to upload their own corpora, and provide a user-friendly frontend interface.
+Learn Like An LLM is a project designed to help users understand and engage with language models by simulating the experience of guessing masked words in sentences. The initial implementation includes a BERT-based model for generating probable words, and the `all-MiniLM-L6-v2` model to generate cosine similarity between user input and the original text. Future expansions aim to incorporate more sophisticated models, improve the scoring system, improve the difficulty system, and provide a user-friendly frontend interface.
 
 ## Table of Contents
 

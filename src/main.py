@@ -36,7 +36,7 @@ def main():
 
     # Initialize translator
     translator = Translator()
-    language_code = language_code[language]
+    language_code = language_code.get(language, 'auto')
 
     # Initialize user profile
     user_profile = UserProfile()
