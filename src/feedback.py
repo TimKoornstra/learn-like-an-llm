@@ -66,3 +66,43 @@ def provide_context_feedback(
         feedback += f"{i}. {word} (fitness: {fitness:.2f})\n"
 
     return feedback
+
+
+def provide_translations(
+    original_sentence: str,
+    user_sentence: str,
+    language_code: str,
+    translator
+) -> str:
+    """
+    Translate a sentence to a specified language.
+
+    Parameters
+    ----------
+    sentence : str
+        The sentence to be translated.
+    language_code : str
+        The language code for the target language.
+    translator : object
+        The translator object used for translation.
+
+    Returns
+    -------
+    str
+        The translated sentence.
+    """
+
+    if language_code == 'en':
+        return "Cannot translate to English."
+
+    original_translation = translator.translate(
+        original_sentence, src=language_code, dest='en').text
+    user_translation = translator.translate(
+        user_sentence, src=language_code, dest='en').text
+
+    ret_str = f"Original Sentence (translated): {original_translation}"
+
+    if original_sentence != user_sentence:
+        ret_str += f"\nYour Sentence (translated): {user_translation}\n"
+
+    return ret_str

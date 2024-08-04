@@ -5,8 +5,9 @@ from data_processing import (
     load_corpus, preprocess_text, calculate_frequency_dict)
 from masking import mask_word
 from user import UserProfile, schedule_review, adjust_difficulty
-from feedback import provide_context_feedback
+from feedback import provide_context_feedback, provide_translations
 from context_aware_model import ContextAwareTextModel
+from googletrans import Translator
 
 
 def main():
@@ -17,6 +18,7 @@ def main():
     language, calculates the word frequency dictionary, builds an n-gram model,
     processes sentences, and facilitates a word guessing game with the user.
     """
+    language_code = {'english': 'en', 'spanish': 'es', 'french': 'fr'}
     language = input("Choose a language (e.g., 'english', 'spanish', "
                      "'french'): ").strip().lower()
     corpus_dir = f'data/corpus/{language}'
@@ -31,6 +33,10 @@ def main():
         print(f"No corpus files found in '{corpus_dir}'. Please add text "
               "files to this directory.")
         return
+
+    # Initialize translator
+    translator = Translator()
+    language_code = language_code[language]
 
     # Initialize user profile
     user_profile = UserProfile()
@@ -59,6 +65,7 @@ def main():
             sentence, frequency_dict, difficulty)
         print("\nMasked Sentence: ", masked_sentence)
         user_guess = input("Guess the missing word: ")
+        user_sentence = masked_sentence.replace("[MASK]", user_guess)
 
         original_fitness, top_words = context_model.get_word_fitness(
             masked_sentence, original_word)
@@ -72,6 +79,12 @@ def main():
                                             contextual_similarity, top_words,
                                             masked_sentence, context_model)
         print(feedback)
+
+        if language_code != 'en':
+            # Translate the sentence to the user's language
+            provided_translation = provide_translations(
+                sentence, user_sentence, language_code, translator)
+            print(provided_translation)
 
         # Update user profile and adjust difficulty
         user_profile.update_performance(user_fitness)

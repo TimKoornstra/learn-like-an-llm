@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 
 class ContextAwareTextModel:
-    def __init__(self, model_name: str = "distilbert-base-uncased") -> None:
+    def __init__(self, model_name: str = "bert-base-multilingual-uncased") -> None:
         """
         Initialize the ContextAwareTextModel with a specified pre-trained
         model.
