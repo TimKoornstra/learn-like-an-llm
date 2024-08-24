@@ -1,9 +1,7 @@
 import random
 import nltk
 import os
-from data_processing import (
-    load_corpus, preprocess_text, calculate_frequency_dict)
-from masking import mask_word
+from data_processing import load_corpus
 from user import UserProfile, schedule_review, adjust_difficulty
 from feedback import provide_context_feedback, provide_translations
 from context_aware_model import ContextAwareTextModel
@@ -44,40 +42,52 @@ def main():
     corpus = ''
     for file in corpus_files:
         corpus += load_corpus(file) + ' '
-    tokens = preprocess_text(corpus)
-
-    # Calculate the frequency dictionary
-    frequency_dict = calculate_frequency_dict(tokens)
 
     sentences = nltk.sent_tokenize(corpus)
     random.shuffle(sentences)
 
-    context_model = ContextAwareTextModel()
+    model = ContextAwareTextModel()
 
     while True:
-        difficulty = user_profile.get_current_difficulty()
         sentence = sentences.pop(0)
-        sentence = sentence.strip().replace('\n', '')
-        if len(sentence) == 0:
+
+        masked_sentence, original_word, mask_index = model.mask_word(
+            sentence, user_profile.get_average_score())
+        if mask_index == -1:
+            print("Couldn't find a suitable word to mask in this sentence. "
+                  "Skipping...")
             continue
-
-        masked_sentence, original_word = mask_word(
-            sentence, frequency_dict, difficulty)
         print("\nMasked Sentence: ", masked_sentence)
-        user_guess = input("Guess the missing word: ")
-        user_sentence = masked_sentence.replace("[MASK]", user_guess)
+        user_guess = input("Guess the missing word: ").strip().lower()
+        user_sentence = masked_sentence.replace('[MASK]', user_guess)
 
-        original_fitness, top_words = context_model.get_word_fitness(
-            masked_sentence, original_word)
-        user_fitness, _ = context_model.get_word_fitness(
-            masked_sentence, user_guess)
-        contextual_similarity = context_model.calculate_contextual_similarity(
-            sentence, original_word, user_guess)
+        perplexity_masked, perplexity_user = model.calculate_perplexity(
+            masked_sentence, user_guess, mask_index)
+        user_fitness = model.calculate_fitness_score(
+            perplexity_masked, perplexity_user)
 
-        feedback = provide_context_feedback(user_guess, original_word,
-                                            user_fitness, original_fitness,
-                                            contextual_similarity, top_words,
-                                            masked_sentence, context_model)
+        _, perplexity_original = model.calculate_perplexity(
+            masked_sentence, original_word, mask_index)
+        original_fitness = model.calculate_fitness_score(
+            perplexity_masked, perplexity_original)
+
+        top_words_with_fitness = []
+        for word in model.get_top_predictions(masked_sentence):
+            _, perplexity_word = model.calculate_perplexity(
+                masked_sentence, word, mask_index)
+            fitness = model.calculate_fitness_score(
+                perplexity_masked, perplexity_word)
+            top_words_with_fitness.append((word, fitness))
+
+        feedback = provide_context_feedback(
+            user_guess,
+            original_word,
+            user_fitness,
+            original_fitness,
+            top_words_with_fitness,
+            masked_sentence,
+            model
+        )
         print(feedback)
 
         if language_code != 'en':

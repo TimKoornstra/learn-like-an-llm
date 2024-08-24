@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Tuple
+from context_aware_model import ContextAwareTextModel
 
 
 def provide_context_feedback(
@@ -6,13 +7,13 @@ def provide_context_feedback(
     original_word: str,
     user_fitness: float,
     original_fitness: float,
-    contextual_similarity: float,
-    top_words: List[str],
+    top_words: List[Tuple[str, float]],
     masked_sentence: str,
-    context_model
+    context_model: ContextAwareTextModel
 ) -> str:
     """
-    Provide feedback on the user's guess in terms of contextual fitness.
+    Provide feedback on the user's guess in terms of contextual fitness using
+    perplexity-based scores.
 
     Parameters
     ----------
@@ -24,14 +25,12 @@ def provide_context_feedback(
         The fitness score of the user's guessed word in the context.
     original_fitness : float
         The fitness score of the original word in the context.
-    contextual_similarity : float
-        The similarity score between the user's guessed word and the original
-        word.
-    top_words : List[str]
-        A list of top words that fit well in the context.
+    top_words : List[Tuple[str, float]]
+        A list of top words that fit well in the context, along with their
+        fitness scores.
     masked_sentence : str
         The sentence with a masked word, represented as '[MASK]'.
-    context_model : object
+    context_model : ContextAwareTextModel
         The context model used to calculate fitness scores.
 
     Returns
@@ -43,16 +42,18 @@ def provide_context_feedback(
     feedback = (
         f"Original word: '{original_word}' (fitness score: "
         f"{original_fitness:.2f})\n"
-        f"Your guess: '{user_guess}' (fitness score: {user_fitness:.2f})\n"
-        f"Contextual similarity between your guess and the original word: "
-        f"{contextual_similarity:.2f}\n\n"
+        f"Your guess: '{user_guess}' (fitness score: {user_fitness:.2f})\n\n"
     )
 
+    # Adjust these thresholds based on your observed fitness score ranges
     if user_fitness > original_fitness:
-        feedback += ("Great job! Your word actually fits better in this "
-                     "context than the original word.\n")
-    elif user_fitness > 0.8 * original_fitness:
-        feedback += "Excellent! Your word fits very well in this context.\n"
+        feedback += ("Outstanding! Your word fits even better in this context "
+                     "than the original word.\n")
+    elif user_fitness > 0.9 * original_fitness:
+        feedback += ("Excellent! Your word fits extremely well in this "
+                     "context.\n")
+    elif user_fitness > 0.7 * original_fitness:
+        feedback += "Great job! Your word fits very well in this context.\n"
     elif user_fitness > 0.5 * original_fitness:
         feedback += ("Good try! Your word fits reasonably well in this "
                      "context.\n")
@@ -60,9 +61,22 @@ def provide_context_feedback(
         feedback += ("Your word might not be the best fit for this context, "
                      "but don't worry! Language learning is a process.\n")
 
-    feedback += "\nTop words that fit well in this context:\n"
-    for i, word in enumerate(top_words[:5], 1):
-        fitness, _ = context_model.get_word_fitness(masked_sentence, word)
+    feedback += ("\nLet's look at how your guess compares to the original word"
+                 ":\n")
+    if user_fitness > original_fitness:
+        feedback += ("Your guess actually reduced the sentence's perplexity "
+                     "more than the original word!\n")
+    elif user_fitness == original_fitness:
+        feedback += ("Your guess fits just as well as the original word in "
+                     "this context.\n")
+    else:
+        difference = (original_fitness - user_fitness) / original_fitness * 100
+        feedback += (f"The original word reduces the sentence's perplexity by "
+                     f"about {difference:.1f}% more than your guess.\n")
+
+    top_words = sorted(top_words, key=lambda x: x[1], reverse=True)
+    feedback += "\nOther words that fit well in this context:\n"
+    for i, (word, fitness) in enumerate(top_words[:5], 1):
         feedback += f"{i}. {word} (fitness: {fitness:.2f})\n"
 
     return feedback
